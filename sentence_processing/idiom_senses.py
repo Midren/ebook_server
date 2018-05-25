@@ -1,10 +1,15 @@
 import graph_word_wsd
 import auxiliar_functions as af
 import idiom_processing as ip
-from nltk.corpus import wordnet as wn
 from pprint import pprint
 
+
 def get_idiom_definitions(sentence, word, word_order):
+    """
+    (str, str, int) -> list.
+
+    Find best definitions for idiom.
+    """
     idiom_name, _, def_examples = ip.get_idiom(sentence, word, word_order)
     lemmas_set = af.get_sen_lemmas_set(sentence)
     graph = graph_word_wsd.build_word_graph(lemmas_set, word)
@@ -24,9 +29,11 @@ def get_idiom_definitions(sentence, word, word_order):
         graph.merge(gr)
 
     definitions = graph_word_wsd.get_top_synsets(graph, "start", True)
-    print(list(map(lambda x: def_examples[x], definitions)))
-    print(definitions)
+    # print(list(map(lambda x: def_examples[x], definitions)))
+    # print(definitions)
+    return definitions
+
 
 if __name__ == "__main__":
-    sentence = """as soon as, I got off, I bumped into an old shoolmate, Mark""".lower()
+    sentence = """as soon as, I got off, I bumped into shoolmate.""".lower()
     pprint(get_idiom_definitions(sentence, "got", 0))

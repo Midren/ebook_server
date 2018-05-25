@@ -8,6 +8,8 @@ import nltk
 
 def get_pos_tokens_dict(sentence):
     """
+    (str) -> dict.
+
     Return dictionary, where key is word and value
     is list with Part-Of-Speech tags, index of tag in list
     is order of occurrence
@@ -21,10 +23,20 @@ def get_pos_tokens_dict(sentence):
 
 
 def get_pos_tokens_list(tokenized_sen):
+    """
+    (list) -> list.
+
+    Return list of part-of-speech tags for tokenized sentence.
+    """
     return nltk.pos_tag(tokenized_sen)
 
 
 def get_lemmatized_sen(sentence):
+    """
+    (str) -> list.
+
+    Return list of lemmatized words of this sentence.
+    """
     tokenized_sen = nltk.word_tokenize(sentence)
     tokens_dict = get_pos_tokens_dict(sentence)
     lemmatized_sen = []
@@ -35,11 +47,21 @@ def get_lemmatized_sen(sentence):
 
 
 def lemmatize_word(sentence, word, order):
+    """
+    (str, str, int) -> str.
+
+    Return lemmatized word.
+    """
     tokens_dict = get_pos_tokens_dict(sentence)
     return lemmatize(word, tokens_dict, order)
 
 
 def get_pos_wn(word, tokens_dict, order=0):
+    """
+    (str, dict, int) -> str.
+
+    Return part-of-speech of word in WordNet's representation.
+    """
     word_class = tokens_dict[word][order]
     if word_class in ['NN', 'NNS', 'NNP', 'NNPS']:
         return wn.NOUN
@@ -52,12 +74,23 @@ def get_pos_wn(word, tokens_dict, order=0):
 
 
 def simple_wn_2_oxf(wn_class):
+    """
+    (str) -> str.
+
+    Return part-of-speech in Oxford's representation from WordNet's that is
+    two charachters long.
+    """
     wn_2_oxf = {wn.ADJ: "Adjective", wn.ADV: "Adverb", wn.NOUN: "Noun",
                 wn.VERB: "Verb", wn.ADJ_SAT: "Adjective"}
     return wn_2_oxf[wn_class]
 
 
 def wn_2_oxf(wn_class):
+    """
+    (str) -> str.
+
+    Return WordNet's representation of part-of-speech from Oxford's.
+    """
     wn_2_oxf = {"JJ": "Adjective", "RB": "Adverb", "CC": "Conjuction",
                 "DT": "Determiner", "UH": "Interjection", "NN": "Noun",
                 "CD": "Numeral", "IN": "Preposition", "PRP": "Pronoun",
@@ -67,17 +100,26 @@ def wn_2_oxf(wn_class):
 
 def oxf_2_wn(oxf_class):
     """
+    (str) -> str.
+
     Return lexical category in WordNet form from
-    lexical category from Oxford API
+    lexical category from Oxford API.
     """
     oxf_2_wn = {"Adjective": "JJ", "Adverb": "RB", "Conjuction": "CC",
-                "Determiner": "DT", "Idiomatic": "Idiomatic", "Interjection": "UH",
-                "Noun": "NN", "Numeral": "CD", "Other": "Other", "Prefix": "Prefix",
-                "Preposition": "IN", "Pronoun": "PRP", "Suffix": "Suffix", "Verb": "VB"}
+                "Determiner": "DT", "Idiomatic": "Idiomatic",
+                "Interjection": "UH", "Noun": "NN", "Numeral": "CD",
+                "Other": "Other", "Prefix": "Prefix", "Preposition": "IN",
+                "Pronoun": "PRP", "Suffix": "Suffix", "Verb": "VB"}
     return oxf_2_wn[oxf_class]
 
 
 def lemmatize(word, tokens_dict, order=0):
+    """
+    (str, dict, int) -> str.
+
+    Return lemmatized word using dict of tokens and order of word in
+    sentence.
+    """
     pos_tag = get_pos_wn(word, tokens_dict)
     if pos_tag:
         poss_lemm = wn._morphy(word, pos_tag)
@@ -90,19 +132,24 @@ def lemmatize(word, tokens_dict, order=0):
             for w in poss_lemm:
                 if w != word:
                     return w
-    # print(poss_lemm, tokens_dict[word])
     wordnet_lemmatizer = WordNetLemmatizer()
     lemmatized = wordnet_lemmatizer.lemmatize(word)
     return lemmatized
 
 
 def get_sen_lemmas_set(sentence, word=None, word_order=0):
+    """
+    (str, str, int) -> set.
+
+    Return set of lemmas of words in this sentence.
+    """
     tokens_dict = get_pos_tokens_dict(sentence)
     lemmas_set = set()
 
     for token in tokens_dict.keys():
         for order, pos in enumerate(tokens_dict[token]):
-            if not (token in punctuation or token in stopwords.words("english")) or token == word:
+            if not (token in punctuation or (
+                    token in stopwords.words("english"))) or token == word:
                 lemma = lemmatize(token, tokens_dict, order)
                 lemmas_set.add((lemma, get_pos_wn(token, tokens_dict, order)))
 
@@ -111,26 +158,3 @@ def get_sen_lemmas_set(sentence, word=None, word_order=0):
         word_pos = get_pos_wn(word, tokens_dict, word_order)
         return lemmas_set, (word_lemma, word_pos)
     return lemmas_set
-
-
-def print_definitions(word, sentence, order=0):
-    """
-    Print possible definition of word in this sentence
-    """
-    lemmatized_word, lexical_category, definitions =\
-        get_definitions(word, sentence, order)
-    print("------")
-    print("Word: " + lemmatized_word + " (" + wn_2_oxf_lex_cat(lexical_category) + ")")
-    print("------")
-    print("Definition: ", definitions["definition"])
-    print("Example: ", definitions["example"])
-
-
-if __name__ == "__main__":
-    sentence = input("Write sentence: ")
-    word = input("Write unknown word in this sentence: ")
-    if sentence.count(word) > 1:
-        order = int(input("Write order of word in this sentence: "))
-        print_definitions(word, sentence, order - 1)
-    else:
-        print_definitions(word, sentence)

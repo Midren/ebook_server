@@ -8,20 +8,22 @@ import json
 idiom_dict = get_all_idioms_dict()
 
 
-@app.route("/", methods=["POST", "GET"])
-def hello_world():
+@app.route("/", methods=["POST"])
+def main():
+    """Give user opportunity to get definitions using POST request."""
     st = time()
     data = request.data
     data_dict = json.loads(data)
     sentence = data_dict.get("sentence").lower().strip()
     word = data_dict.get("word").lower().strip()
     word_order = int(data_dict.get("word_order"))
-    # sentence = "I worked all day on the farm or all day on factory and find out about her".lower()
-    # word = "worked"
+    # sentence = " My name is Roman ".lower().strip()
+    # word = " name ".strip()
     # word_order = 0
     idiom = True
     try:
-        i_word, i_category, i_defs = get_idiom(sentence, word, word_order, idiom_dict)
+        i_word, i_category, i_defs = get_idiom(sentence, word, word_order,
+                                               idiom_dict)
     except TypeError:
         idiom = False
     print(time() - st)
@@ -31,12 +33,13 @@ def hello_world():
         return jsonify(
             {"senses":
                 {"word_sense": {"definitions": defs, "category": category},
-                "idiom_sense": {"definitions": i_defs, "category": i_category}
-                },
-            "word": word})
+                 "idiom_sense": {"definitions": i_defs, "category": i_category,
+                                 "idiom_name": i_word}
+                 },
+             "word": word})
     else:
         return jsonify(
             {"senses":
                 {"word_sense": {"definitions": defs, "category": category},
-                "idiom_sense": None},
-            "word": word})
+                 "idiom_sense": None},
+             "word": word})
